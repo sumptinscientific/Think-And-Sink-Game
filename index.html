@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Think & Sink</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f8ff; }
+    #boards { display: flex; justify-content: center; gap: 50px; margin-top: 20px; }
+    .board { display: grid; grid-template-columns: repeat(10, 30px); grid-template-rows: repeat(10, 30px); }
+    .cell { border: 1px solid #333; width: 30px; height: 30px; cursor: pointer; }
+    .hit { background: red; }
+    .miss { background: lightblue; }
+    #question { margin: 20px auto; width: 60%; padding: 10px; border: 2px solid #333; background: #fff; }
+    .option { display: block; margin: 10px; padding: 8px; border: 1px solid #333; cursor: pointer; }
+    .option:hover { background: #eee; }
+  </style>
+</head>
+<body>
+  <h1>Think & Sink</h1>
+  <div id="question"></div>
+  <div id="boards">
+    <div>
+      <h3>Your Board</h3>
+      <div id="player-board" class="board"></div>
+    </div>
+    <div>
+      <h3>Opponent Board</h3>
+      <div id="opponent-board" class="board"></div>
+    </div>
+  </div>
+  <p id="status"></p>
+
+  <script>
+    // --- Game Setup ---
+    const playerBoard = document.getElementById('player-board');
+    const opponentBoard = document.getElementById('opponent-board');
+    const questionBox = document.getElementById('question');
+    const status = document.getElementById('status');
+
+    let currentQuestion = null;
+
+    // Build 10x10 boards
+    for (let i = 0; i < 100; i++) {
+      const playerCell = document.createElement('div');
+      playerCell.classList.add('cell');
+      playerBoard.appendChild(playerCell);
+
+      const oppCell = document.createElement('div');
+      oppCell.classList.add('cell');
+      oppCell.dataset.index = i;
+      oppCell.addEventListener('click', () => {
+        if (!currentQuestion) return;
+        checkAnswerAndShoot(oppCell);
+      });
+      opponentBoard.appendChild(oppCell);
+    }
+
+    // Simple Question Bank
+    const questions = [
+      {
+        topic: "Biology",
+        difficulty: "Easy",
+        question: "What is the powerhouse of the cell?",
+        options: ["Ribosome", "Mitochondrion", "Nucleus", "Chloroplast"],
+        answer: "Mitochondrion"
+      },
+      {
+        topic: "Biology",
+        difficulty: "Easy",
+        question: "DNA is made up of repeating units called?",
+        options: ["Amino acids", "Nucleotides", "Lipids", "Monosaccharides"],
+        answer: "Nucleotides"
+      }
+    ];
+
+    // Ask Question
+    function askQuestion() {
+      currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+      questionBox.innerHTML = `<p><b>${currentQuestion.question}</b></p>`;
+      currentQuestion.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.classList.add('option');
+        btn.onclick = () => {
+          if (opt === currentQuestion.answer) {
+            status.textContent = "Correct! Take your shot.";
+            status.dataset.allowShot = "true";
+          } else {
+            status.textContent = "Wrong! Turn skipped.";
+            status.dataset.allowShot = "false";
+          }
+        };
+        questionBox.appendChild(btn);
+      });
+    }
+
+    function checkAnswerAndShoot(cell) {
+      if (status.dataset.allowShot === "true") {
+        if (!cell.classList.contains('hit') && !cell.classList.contains('miss')) {
+          cell.classList.add(Math.random() > 0.5 ? 'hit' : 'miss');
+          status.textContent = "Shot fired!";
+          currentQuestion = null;
+          setTimeout(askQuestion, 2000);
+        }
+      } else {
+        status.textContent = "You can't shoot this turn.";
+      }
+    }
+
+    // Start game
+    askQuestion();
+  </script>
+</body>
+</html>
